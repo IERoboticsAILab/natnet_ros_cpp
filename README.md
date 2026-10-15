@@ -19,8 +19,8 @@ This is the [IE Robotics & AI Lab](https://github.com/IERoboticsAILab) fork of [
 
 Changes on this branch (one commit each):
 
-- **NatNet SDK 4.4 instead of 4.0.** SDK 4.0 segfaults inside `libNatNet.so` on frames from Motive 3.x, usually within seconds of connecting. ARM is supported too.
-- **No more busy loop.** The node re-registered the frame callback in a loop with no sleep and used a full CPU core. It now registers once and spins (about 8% of a core with 6 bodies at 120 Hz).
+- **NatNet SDK 4.4 instead of 4.0.** SDK 4.0 segfaults inside `libNatNet.so` on frames from Motive 3.x, usually within seconds of connecting. ARM is supported too. (SDK 4.5, which matches Motive 3.5, was tested too: in unicast it lost about half the frames in blocks of 10-14 frames, so it is not used.)
+- **No more busy loop.** The node re-registered the frame callback in a loop with no sleep and used a full CPU core. It now registers once and spins (about 4-8% of a core with 6 bodies at 120 Hz).
 - **Untracked rigid bodies are not published.** Motive keeps sending the last known pose of a lost body; the driver used to publish it as if it were live. Set `pub_untracked_rigid_body:=true` for the old behaviour.
 - **One timestamp per frame**, and a new `remove_latency:=true` option that stamps messages with the camera exposure time (as in the ROS 2 driver).
 - **Bodies added in Motive after start-up** no longer cause an invalid publisher; they are skipped with a warning until the node restarts.
@@ -28,6 +28,15 @@ Changes on this branch (one commit each):
 - **`pub_rigid_body_marker` now defaults to `false`** in `natnet_ros.launch`.
 - No `[ERROR]` about the analog frame rate at start-up when Motive has no analog devices.
 - `FrameCallback` no longer casts the `NatNetClient*` to `Internal*`.
+
+Measured with the lab's Motive 3.5 (120 Hz, unicast, 6 rigid bodies) on Ubuntu 20.04, 2026-10-15:
+
+| Build | Result |
+|---|---|
+| upstream `main` (SDK 4.0) | segfault within ~8 s |
+| upstream + SDK 4.4 | 120 Hz, but 100% of a CPU core |
+| this branch (SDK 4.4) | 120 Hz on every body, ~4% of a core, largest gap ~14 ms |
+| this branch with SDK 4.5 | ~67 Hz: about half the frames lost, gaps up to ~127 ms |
 
 **Upgrading an existing workspace:** the SDK download is skipped when `deps/NatNetSDK/lib` exists, so delete the old SDK first:
 
@@ -42,9 +51,9 @@ roslaunch natnet_ros_cpp natnet_ros.launch serverIP:=<motive-ip> clientIP:=<this
 ```
 
 ## Introduction
-This package contains a ROS driver for the NatNet protocol used by the OptiTrack motion capture system. It supports NatNet versions 4.0 (Motive 2.2 and higher). The NatNet SDK provided by the optitrack can be found [here](https://optitrack.com/support/downloads/developer-tools.html#natnet-sdk). It will be downloaded under `deps/NatnetSDK` while building it for the first time. NatNet protocol is used for streaming live motion capture data (rigid bodies, skeletons etc) across the shared network. 
+This package contains a ROS driver for the NatNet protocol used by the OptiTrack motion capture system. It uses NatNet SDK 4.4 (works with Motive 3.x). The NatNet SDK provided by the optitrack can be found [here](https://optitrack.com/support/downloads/developer-tools.html#natnet-sdk). It will be downloaded under `deps/NatNetSDK` while building it for the first time. NatNet protocol is used for streaming live motion capture data (rigid bodies, skeletons etc) across the shared network. 
 
-This package is only tested with the Natnet 4.0 and ROS noetic but probably will work with the older versions of both as well. 
+This fork is tested with NatNet SDK 4.4, Motive 3.5 and ROS Noetic on Ubuntu 20.04. (Upstream was tested with NatNet 4.0.) 
 
 ### Current Features:
   
@@ -60,9 +69,8 @@ This package is only tested with the Natnet 4.0 and ROS noetic but probably will
 
  - Include Skeleton and other devices in the system to make it package as whole.
  - Considering position and orientation for similar marker configurations (at least 3 markers)
- - Considering compensation of time delay (~5-6ms) to the ROS time stamp.
  - Adding an option for the axis orientation (Z UP or Y UP)
- - Creating package for ROS2.
+ - (ROS 2: see the `ros2` branch of this fork.)
 
 ## How to use it
 
@@ -74,9 +82,9 @@ sudo apt install -y ros-$ROS_DISTRO-tf2* wget
 Keep your system connected to the internet while building the package for the first time.
 ```
 cd ~/catkin_ws/src
-git clone https://github.com/L2S-lab/natnet_ros_cpp
+git clone -b ros1 https://github.com/IERoboticsAILab/natnet_ros_cpp
 cd ..
-catkin build  #OR catkin_make
+catkin build -DCMAKE_BUILD_TYPE=Release  #OR catkin_make -DCMAKE_BUILD_TYPE=Release
 . devel/setup.bash
 ```
 
@@ -85,7 +93,8 @@ catkin build  #OR catkin_make
 - Open the Motive app. 
 - In the motive app, open the streaming panel.
 - Disable the other streaming Engines like VRPN, Trackd etc.
-- Under the OptiTrack Streaming Engine, turn on the Broadcast Frame.
+- Under the OptiTrack Streaming Engine, turn on the Broadcast Frame (in Motive 3: under NatNet, turn on Enable).
+- Turn on Rigid Bodies. Labeled, unlabeled and asset markers are only needed for the marker options below.
 - Select the correct IP address in the Local Interface.
 - Select the Up Axis as Z.
 
@@ -115,6 +124,14 @@ Launch file `natnet_ros.launch` contains the several configurable arguments. The
 - `serverIP` : The IP address of the host PC. (The one selected in the Local Interface in Motive app)
 - `clientIP` : The IP address of the PC on which the file will be launched
 - `serverType` : Two possible options, `multicast` and `unicast`
+
+Publishing options (all `false` by default except `pub_rigid_body`):
+
+- `pub_rigid_body` : publish `/natnet_ros/<body-name>/pose` and TF for each rigid body (default `true`)
+- `pub_untracked_rigid_body` : keep publishing a rigid body with its last known pose while Motive is not tracking it
+- `pub_rigid_body_marker` : publish the markers of each rigid body on `/natnet_ros/<body-name>/marker#/pose`
+- `pub_individual_marker`, `pub_pointcloud` : see below
+- `remove_latency` : stamp messages with the camera mid-exposure time instead of the time the frame was received
 
 ##### Publishing the single marker 
 It is possible to track the single marker as a rigid body with constant orientation. Go to the `config/initiate.yaml` It is suggested to make a copy of the file and rename the new file.
