@@ -26,6 +26,12 @@ Changes on this branch (one commit each):
 - **One timestamp per frame** for all poses, markers and TF of that frame (`remove_latency` still applies).
 - **Marker topics fixed**: publisher keys no longer collide (body 1 marker 12 vs body 11 marker 2) and `frame_id` is the global frame.
 - **`natnet_ros2.launch.py` publishes by default**: `pub_rigid_body` and `activate` now default to `true`, so a plain launch streams rigid bodies.
+- **Works on Galactic**: the launch file no longer imports `SetParametersFromFile` (Humble and newer only).
+- **`libNatNet.so` is installed** with the package, so the node starts without setting `LD_LIBRARY_PATH` by hand.
+
+The NatNet SDK stays at 4.4. SDK 4.5, which matches Motive 3.5, lost about half the frames in unicast when tested with the ROS 1 driver, so it is not used.
+
+Measured with the lab's Motive 3.5 (120 Hz, unicast, 6 rigid bodies) on Ubuntu 20.04 with Galactic, 2026-10-15: 120 Hz on every body, about 3-4% of a CPU core, largest gap ~19 ms.
 
 **Typical launch** (unicast; `clientIP` must be the IP of the machine running the node). Rigid bodies are published on `/<body-name>/pose`:
 
@@ -36,9 +42,9 @@ ros2 launch natnet_ros2 natnet_ros2.launch.py serverIP:=<motive-ip> clientIP:=<t
 If you are using software for any publication or article, we would be delighted if you could cite it [from here](https://hal.science/hal-04150950). 
 
 ## Introduction
-This package contains a ROS 2 driver for the NatNet protocol used by the OptiTrack motion capture system. It supports NatNet versions 4.0 (Motive 2.2 and higher). The NatNet SDK provided by the optitrack can be found [here](https://optitrack.com/support/downloads/developer-tools.html#natnet-sdk). It will be downloaded under `deps/NatnetSDK` while building it for the first time. NatNet protocol is used for streaming live motion capture data (rigid bodies, skeletons etc) across the shared network. 
+This package contains a ROS 2 driver for the NatNet protocol used by the OptiTrack motion capture system. It uses NatNet SDK 4.4 (works with Motive 3.x). The NatNet SDK provided by the optitrack can be found [here](https://optitrack.com/support/downloads/developer-tools.html#natnet-sdk). It will be downloaded under `deps/NatNetSDK` while building it for the first time. NatNet protocol is used for streaming live motion capture data (rigid bodies, skeletons etc) across the shared network. 
 
-This package is only tested with the Natnet 4.0 and ROS 2 (Foxy and Humble) but probably will work with the other versions of Motive and ROS 2 as well. 
+This fork is tested with NatNet SDK 4.4, Motive 3.5 and ROS 2 Galactic on Ubuntu 20.04. (Upstream was tested with NatNet 4.0 on Foxy and Humble, and its CI builds Humble and Jazzy.) 
 
 ### Current Features:
   
@@ -65,9 +71,9 @@ sudo apt install -y ros-$ROS_DISTRO-tf2* wget
 Keep your system connected to the internet while building the package for the first time.
 ```
 cd ~/ros2_ws/src
-git clone https://github.com/L2S-lab/natnet_ros2
+git clone -b ros2 https://github.com/IERoboticsAILab/natnet_ros_cpp natnet_ros2
 cd ..
-colcon build --symlink-install
+colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
 . install/setup.bash
 ```
 
