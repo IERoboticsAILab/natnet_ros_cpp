@@ -129,7 +129,7 @@ void Internal::Info(NatNetClient* g_pClient, ros::NodeHandle &n)
                         const int markerRequiredLabel = pRB->MarkerRequiredLabels[markerIdx];
                         // Creating publisher for the markers of the rigid bodies
                         if(rosparam.pub_rigid_body_marker)
-                            this->RigidbodyMarkerPub[std::to_string(pRB->ID)+std::to_string(markerIdx+1)] = n.advertise<geometry_msgs::PointStamped>(body_name+"/marker"+std::to_string(markerIdx)+"/pose", 50);
+                            this->RigidbodyMarkerPub[std::to_string(pRB->ID)+"_"+std::to_string(markerIdx+1)] = n.advertise<geometry_msgs::PointStamped>(body_name+"/marker"+std::to_string(markerIdx)+"/pose", 50);
                         ROS_INFO_COND(rosparam.log_internals,  "\tMarker #%d:", markerIdx );
                         ROS_INFO_COND(rosparam.log_internals,  "\t\tPosition: %.2f, %.2f, %.2f", markerPosition[0], markerPosition[1], markerPosition[2] );
 
@@ -357,14 +357,15 @@ void Internal::PubRigidbodyMarker(sMarker &data, Internal &internal)
     NatNet_DecodeID( data.ID, &modelID, &markerID );
 
     geometry_msgs::PointStamped msgMarkerPose;
-    msgMarkerPose.header.frame_id = std::to_string(modelID)+std::to_string(markerID);
+    // marker positions are in the global frame, like the rigid body poses
+    msgMarkerPose.header.frame_id = internal.rosparam.globalFrame;
     msgMarkerPose.header.stamp = ros::Time::now();
 
     msgMarkerPose.point.x = data.x;
     msgMarkerPose.point.y = data.y;
     msgMarkerPose.point.z = data.z;
 
-    const auto publisher_it = internal.RigidbodyMarkerPub.find(std::to_string(modelID)+std::to_string(markerID));
+    const auto publisher_it = internal.RigidbodyMarkerPub.find(std::to_string(modelID)+"_"+std::to_string(markerID));
     if (publisher_it == internal.RigidbodyMarkerPub.end())
     {
         ROS_WARN_THROTTLE(5, "No publisher for marker %d of rigid body ID %d", markerID, modelID);
