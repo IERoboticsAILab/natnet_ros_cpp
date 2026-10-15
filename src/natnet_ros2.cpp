@@ -29,6 +29,7 @@ NatNetNode::NatNetNode(rclcpp::NodeOptions& node_options) : LifecycleNode("natne
     declare_parameter<bool>("log_frames", false);
     declare_parameter<bool>("log_latencies", false);
     declare_parameter<bool>("pub_rigid_body", true);
+    declare_parameter<bool>("pub_untracked_rigid_body", false);
     declare_parameter<bool>("pub_rigid_body_marker", false);
     declare_parameter<bool>("pub_individual_marker", false);
     declare_parameter<bool>("pub_pointcloud", false);
@@ -67,6 +68,7 @@ void NatNetNode::get_node_params()
     log_frames = get_parameter("log_frames").as_bool();
     log_latencies = get_parameter("log_latencies").as_bool();
     pub_rigid_body = get_parameter("pub_rigid_body").as_bool();
+    pub_untracked_rigid_body = get_parameter("pub_untracked_rigid_body").as_bool();
     pub_rigid_body_marker = get_parameter("pub_rigid_body_marker").as_bool();
     pub_individual_marker = get_parameter("pub_individual_marker").as_bool();
     pub_pointcloud = get_parameter("pub_pointcloud").as_bool();
@@ -388,11 +390,14 @@ void NatNetNode::process_frame(sFrameOfMocapData* data)
     RCLCPP_INFO_EXPRESSION(get_logger(),log_frames, "Rigid Bodies [Count=%d]", data->nRigidBodies);
     for(unsigned int i=0; i < data->nRigidBodies; i++)
     {
-        if(pub_rigid_body)
+        // Motive keeps sending the last known pose of a rigid body it has lost; don't publish
+        // that stale pose as if it were live unless asked to.
+        bool bTrackingValid = data->RigidBodies[i].params & 0x01;
+        if(pub_rigid_body && (bTrackingValid || pub_untracked_rigid_body))
         {
             process_rigid_body(data->RigidBodies[i]);
         }
-        RCLCPP_INFO_EXPRESSION(get_logger(),log_frames, "Rigid Body [ID=%d  Error=%3.2f]", data->RigidBodies[i].ID, data->RigidBodies[i].MeanError);//, bTrackingValid);
+        RCLCPP_INFO_EXPRESSION(get_logger(),log_frames, "Rigid Body [ID=%d  Error=%3.2f  Tracked=%d]", data->RigidBodies[i].ID, data->RigidBodies[i].MeanError, bTrackingValid);
         RCLCPP_INFO_EXPRESSION(get_logger(),log_frames, "x\ty\tz\tqx\tqy\tqz\tqw");
         RCLCPP_INFO_EXPRESSION(get_logger(),log_frames, "%3.2f\t%3.2f\t%3.2f\t%3.2f\t%3.2f\t%3.2f\t%3.2f",
             data->RigidBodies[i].x, data->RigidBodies[i].y, data->RigidBodies[i].z,

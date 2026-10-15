@@ -96,6 +96,7 @@ private:
     bool log_frames=false; // To log frames 
     bool log_latencies=false; // To log the latencies of the system
     bool pub_rigid_body = false; // To enable publishing the rigidbody as ros msg
+    bool pub_untracked_rigid_body = false; // To keep publishing a rigidbody (last known pose) while Motive is not tracking it
     bool pub_rigid_body_marker = false; // To enable publishing individual markers of rigidbodies
     bool pub_individual_marker = false; // To publish the position of individual markers
     std::string immt;

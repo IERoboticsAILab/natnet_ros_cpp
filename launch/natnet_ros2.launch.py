@@ -31,6 +31,7 @@ def node_fn(context,*args, **kwargs):
     global_frame = LaunchConfiguration('global_frame')
     remove_latency = LaunchConfiguration('remove_latency')
     pub_rigid_body = LaunchConfiguration('pub_rigid_body')
+    pub_untracked_rigid_body = LaunchConfiguration('pub_untracked_rigid_body')
     pub_rigid_body_marker = LaunchConfiguration('pub_rigid_body_marker')
     pub_individual_marker = LaunchConfiguration('pub_individual_marker')
     pub_pointcloud = LaunchConfiguration('pub_pointcloud')
@@ -52,6 +53,7 @@ def node_fn(context,*args, **kwargs):
             {"global_frame": global_frame}, 
             {"remove_latency": remove_latency},
             {"pub_rigid_body": pub_rigid_body},
+            {"pub_untracked_rigid_body": pub_untracked_rigid_body},
             {"pub_rigid_body_marker": pub_rigid_body_marker}, 
             {"pub_individual_marker": pub_individual_marker}, 
             {"pub_pointcloud": pub_pointcloud}, 
@@ -114,6 +116,7 @@ def generate_launch_description():
         DeclareLaunchArgument('global_frame', default_value="world"),
         DeclareLaunchArgument('remove_latency',default_value="false"),
         DeclareLaunchArgument('pub_rigid_body', default_value="false"),
+        DeclareLaunchArgument('pub_untracked_rigid_body', default_value="false"), # publish last known pose while not tracked
         DeclareLaunchArgument('pub_rigid_body_marker', default_value="false"),
         DeclareLaunchArgument('pub_individual_marker', default_value="false"),
         DeclareLaunchArgument('pub_pointcloud', default_value="false"),
