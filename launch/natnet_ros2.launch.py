@@ -115,7 +115,7 @@ def generate_launch_description():
         DeclareLaunchArgument('serverDataPort', default_value="1511"),
         DeclareLaunchArgument('global_frame', default_value="world"),
         DeclareLaunchArgument('remove_latency',default_value="false"),
-        DeclareLaunchArgument('pub_rigid_body', default_value="false"),
+        DeclareLaunchArgument('pub_rigid_body', default_value="true"),
         DeclareLaunchArgument('pub_untracked_rigid_body', default_value="false"), # publish last known pose while not tracked
         DeclareLaunchArgument('pub_rigid_body_marker', default_value="false"),
         DeclareLaunchArgument('pub_individual_marker', default_value="false"),
@@ -125,7 +125,7 @@ def generate_launch_description():
         DeclareLaunchArgument('log_latencies', default_value="false"),
         DeclareLaunchArgument('conf_file', default_value="initiate.yaml"),
         DeclareLaunchArgument('node_name', default_value="natnet_ros"),
-        DeclareLaunchArgument('activate', default_value="false"),
+        DeclareLaunchArgument('activate', default_value="true"),
         DeclareLaunchArgument('immt', default_value="PoseStamped",description="publish type of individual markers PoseStampted or PointStamped"),
         OpaqueFunction(function=node_fn)  
         ])
