@@ -25,6 +25,7 @@ public:
     bool log_frames=false; // To log frames 
     bool log_latencies=false; // To log the latencies of the system
     bool pub_rigid_body = false; // To enable publishing the rigidbody as ros msg
+    bool pub_untracked_rigid_body = false; // To keep publishing a rigidbody (last known pose) while Motive is not tracking it
     bool pub_rigid_body_marker = false; // To enable publishing individual markers of rigidbodies
     bool pub_individual_marker = false; // To publish the position of individual markers
     bool pub_pointcloud = false; // To publish all the marker as pointcloud
@@ -54,6 +55,7 @@ public:
         n.getParam("log_frames", log_frames);
         n.getParam("log_latencies", log_latencies);
         n.getParam("pub_rigid_body", pub_rigid_body);
+        n.getParam("pub_untracked_rigid_body", pub_untracked_rigid_body);
         n.getParam("pub_rigid_body_marker", pub_rigid_body_marker);
         n.getParam("pub_individual_marker", pub_individual_marker);
         n.getParam("pub_pointcloud", pub_pointcloud);

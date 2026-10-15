@@ -18,6 +18,8 @@
   <!-- PUBLISHING -->
   <!-- To publish the frame of rigid body -->
   <arg name="pub_rigid_body" default="true"/> 
+  <!-- To keep publishing a rigid body (with its last known pose) while Motive is not tracking it -->
+  <arg name="pub_untracked_rigid_body" default="false"/>
   <!-- To publish the individual (unlabeled) markers along with the (labeled) markers of the rigid bodies -->
   <!-- keep pub_rigid_body to true to publish the markers of the rigidbody -->
   <arg name="pub_rigid_body_marker" default="true"/>  
@@ -51,6 +53,7 @@
 
     <!-- PUBLISHING -->
     <param name="pub_rigid_body" value="$(arg pub_rigid_body)" type="bool"/>
+    <param name="pub_untracked_rigid_body" value="$(arg pub_untracked_rigid_body)" type="bool"/>
     <param name="pub_rigid_body_marker" value="$(arg pub_rigid_body_marker)" type="bool"/>
     <param name="pub_individual_marker" value="$(arg pub_individual_marker)" type="bool"/>
     <param name="pub_pointcloud" value="$(arg pub_pointcloud)" type="bool"/>

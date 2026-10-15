@@ -205,11 +205,14 @@ void Internal::DataHandler(sFrameOfMocapData* data, void* pUserData, Internal &i
     ROS_INFO_COND(internal.rosparam.log_frames, "Rigid Bodies [Count=%d]", data->nRigidBodies);
     for(i=0; i < data->nRigidBodies; i++)
         {
-            if(internal.rosparam.pub_rigid_body)
+            // Motive keeps sending the last known pose of a rigid body it has lost; don't publish
+            // that stale pose as if it were live unless asked to.
+            bool bTrackingValid = data->RigidBodies[i].params & 0x01;
+            if(internal.rosparam.pub_rigid_body && (bTrackingValid || internal.rosparam.pub_untracked_rigid_body))
             {
                 PubRigidbodyPose(data->RigidBodies[i], internal);
             }
-        ROS_INFO_COND(internal.rosparam.log_frames, "Rigid Body [ID=%d  Error=%3.2f]", data->RigidBodies[i].ID, data->RigidBodies[i].MeanError);//, bTrackingValid);
+        ROS_INFO_COND(internal.rosparam.log_frames, "Rigid Body [ID=%d  Error=%3.2f  Tracked=%d]", data->RigidBodies[i].ID, data->RigidBodies[i].MeanError, bTrackingValid);
         ROS_INFO_COND(internal.rosparam.log_frames, "x\ty\tz\tqx\tqy\tqz\tqw");
         ROS_INFO_COND(internal.rosparam.log_frames, "%3.2f\t%3.2f\t%3.2f\t%3.2f\t%3.2f\t%3.2f\t%3.2f",
             data->RigidBodies[i].x, data->RigidBodies[i].y, data->RigidBodies[i].z,
