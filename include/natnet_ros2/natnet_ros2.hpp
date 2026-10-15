@@ -104,6 +104,7 @@ private:
     bool remove_latency = false; // To remove latency from the frame data published on ros publisher
     bool use_helper_node = false; // flag to chnage parameter while using helper node
     rclcpp::Duration frame_delay = rclcpp::Duration(std::chrono::nanoseconds::zero());
+    rclcpp::Time frame_stamp; // stamp shared by every message published for the current frame
     std::string serverIP;
     std::string clientIP;
     std::string serverType;

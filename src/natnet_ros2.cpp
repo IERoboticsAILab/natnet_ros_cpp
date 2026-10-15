@@ -383,6 +383,8 @@ std::chrono::nanoseconds NatNetNode::get_latency_info(sFrameOfMocapData * data)
 void NatNetNode::process_frame(sFrameOfMocapData* data)
 {
     frame_delay = rclcpp::Duration(get_latency_info(data));
+    // One stamp for the whole frame so poses, markers and TF of the same frame match.
+    frame_stamp = remove_latency ? this->get_clock()->now()-frame_delay : this->get_clock()->now();
     unlabled_count = 0;
     msgPointcloud.points.clear();
 
@@ -426,7 +428,7 @@ void NatNetNode::process_frame(sFrameOfMocapData* data)
     if(pub_pointcloud && PointcloudPub)
     {
         msgPointcloud.header.frame_id = global_frame;
-        msgPointcloud.header.stamp = remove_latency ? this->get_clock()->now()-frame_delay : this->get_clock()->now();
+        msgPointcloud.header.stamp = frame_stamp;
         PointcloudPub->publish(msgPointcloud);
     }
 
@@ -452,7 +454,7 @@ void NatNetNode::process_rigid_body(sRigidBodyData &data)
 
     geometry_msgs::msg::PoseStamped msgRigidBodyPose;
     msgRigidBodyPose.header.frame_id = global_frame;
-    msgRigidBodyPose.header.stamp = remove_latency ? this->get_clock()->now()-frame_delay : this->get_clock()->now();
+    msgRigidBodyPose.header.stamp = frame_stamp;
     msgRigidBodyPose.pose.position.x = data.x;
     msgRigidBodyPose.pose.position.y = data.y;
     msgRigidBodyPose.pose.position.z = data.z;
@@ -463,7 +465,7 @@ void NatNetNode::process_rigid_body(sRigidBodyData &data)
     publisher_it->second->publish(msgRigidBodyPose);
     // creating tf frame to visualize in the rviz
     geometry_msgs::msg::TransformStamped msgTFRigidBodies;
-    msgTFRigidBodies.header.stamp = remove_latency ? this->get_clock()->now()-frame_delay : this->get_clock()->now();
+    msgTFRigidBodies.header.stamp = frame_stamp;
     msgTFRigidBodies.header.frame_id = global_frame;
     msgTFRigidBodies.child_frame_id = body_name_it->second;
     msgTFRigidBodies.transform.translation.x = data.x;
@@ -489,7 +491,7 @@ void NatNetNode::process_individual_marker(sMarker &data)
         {    
             geometry_msgs::msg::PoseStamped msgMarkerPose;
             msgMarkerPose.header.frame_id = global_frame;
-            msgMarkerPose.header.stamp = remove_latency ? this->get_clock()->now()-frame_delay : this->get_clock()->now();
+            msgMarkerPose.header.stamp = frame_stamp;
             msgMarkerPose.pose.position.x = data.x;
             msgMarkerPose.pose.position.y = data.y;
             msgMarkerPose.pose.position.z = data.z;
@@ -504,7 +506,7 @@ void NatNetNode::process_individual_marker(sMarker &data)
         {    
             geometry_msgs::msg::PointStamped msgMarkerPose;
             msgMarkerPose.header.frame_id = global_frame;
-            msgMarkerPose.header.stamp = remove_latency ? this->get_clock()->now()-frame_delay : this->get_clock()->now();
+            msgMarkerPose.header.stamp = frame_stamp;
             msgMarkerPose.point.x = data.x;
             msgMarkerPose.point.y = data.y;
             msgMarkerPose.point.z = data.z;
@@ -513,7 +515,7 @@ void NatNetNode::process_individual_marker(sMarker &data)
 
         // creating tf frame to visualize in the rviz
         geometry_msgs::msg::TransformStamped msgTFMarker;
-        msgTFMarker.header.stamp = remove_latency ? this->get_clock()->now()-frame_delay : this->get_clock()->now();
+        msgTFMarker.header.stamp = frame_stamp;
         msgTFMarker.header.frame_id = global_frame;
         msgTFMarker.child_frame_id = object_list[update].name;
         msgTFMarker.transform.translation.x = data.x;
@@ -544,7 +546,7 @@ void NatNetNode::process_rigid_body_marker(sMarker &data)
     geometry_msgs::msg::PointStamped msgMarkerPose;
     // marker positions are in the global frame, like the rigid body poses
     msgMarkerPose.header.frame_id = global_frame;
-    msgMarkerPose.header.stamp = remove_latency ? this->get_clock()->now()-frame_delay : this->get_clock()->now();
+    msgMarkerPose.header.stamp = frame_stamp;
     msgMarkerPose.point.x = data.x;
     msgMarkerPose.point.y = data.y;
     msgMarkerPose.point.z = data.z;
