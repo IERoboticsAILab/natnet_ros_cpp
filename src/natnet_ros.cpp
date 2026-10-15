@@ -67,10 +67,14 @@ int main( int argc, char **argv)
     // Install natnet logging callback for some internal details
     internal.rosparam.log_internals ? NatNet_SetLogCallback( internal.MessageHandler ): internal.Pass();
 
-    while(ros::ok())
-    {   // set the frame callback handler
-        g_pClient->SetFrameReceivedCallback( FrameCallback, g_pClient);  // this function will receive data from the server
-    }
+    // set the frame callback handler once; NatNet calls it from its own thread for every frame.
+    // Re-registering it in a loop kept a full CPU core busy and competed with that thread.
+    g_pClient->SetFrameReceivedCallback( FrameCallback, g_pClient);  // this function will receive data from the server
+    ros::spin();
+
+    g_pClient->SetFrameReceivedCallback( NULL, NULL );
+    g_pClient->Disconnect();
+    delete g_pClient;
 
     return ErrorCode_OK;
 }
