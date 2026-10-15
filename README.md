@@ -9,6 +9,8 @@ if you are using software for any publication or article, we would be delighted 
 
 ## About this fork
 
+See [FORK_CHANGELOG.md](FORK_CHANGELOG.md) for every change with the issue it fixes, and [BEHAVIOUR_CHANGES.md](BEHAVIOUR_CHANGES.md) for what works differently from upstream.
+
 This is the [IE Robotics & AI Lab](https://github.com/IERoboticsAILab) fork of [L2S-lab/natnet_ros_cpp](https://github.com/L2S-lab/natnet_ros_cpp), tested with Motive 3.5 on Ubuntu 20.04.
 
 | Branch | ROS | Based on |
