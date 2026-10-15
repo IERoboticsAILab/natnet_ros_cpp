@@ -10,6 +10,29 @@
 
 It is a continuation of the ROS 1 driver. Which can be found [here](https://github.com/L2S-lab/natnet_ros_cpp).
 
+## About this fork
+
+This is the [IE Robotics & AI Lab](https://github.com/IERoboticsAILab) fork, kept as the `ros2` branch of [IERoboticsAILab/natnet_ros_cpp](https://github.com/IERoboticsAILab/natnet_ros_cpp) and tested with Motive 3.5.
+
+| Branch | ROS | Based on |
+|---|---|---|
+| `ros1` | ROS 1 Noetic | [L2S-lab/natnet_ros_cpp](https://github.com/L2S-lab/natnet_ros_cpp) `main` |
+| `ros2` (this one) | ROS 2 (Galactic, Humble, Jazzy) | [L2S-lab/natnet_ros2](https://github.com/L2S-lab/natnet_ros2) `main` |
+| `main` | | unchanged copy of upstream ROS 1 `main` |
+
+Changes on this branch (one commit each):
+
+- **Untracked rigid bodies are not published.** Motive keeps sending the last known pose of a lost body; the driver used to publish it as if it were live. Set `pub_untracked_rigid_body:=true` for the old behaviour.
+- **One timestamp per frame** for all poses, markers and TF of that frame (`remove_latency` still applies).
+- **Marker topics fixed**: publisher keys no longer collide (body 1 marker 12 vs body 11 marker 2) and `frame_id` is the global frame.
+- **`natnet_ros2.launch.py` publishes by default**: `pub_rigid_body` and `activate` now default to `true`, so a plain launch streams rigid bodies.
+
+**Typical launch** (unicast; `clientIP` must be the IP of the machine running the node). Rigid bodies are published on `/<body-name>/pose`:
+
+```
+ros2 launch natnet_ros2 natnet_ros2.launch.py serverIP:=<motive-ip> clientIP:=<this-machine-ip> serverType:=unicast
+```
+
 If you are using software for any publication or article, we would be delighted if you could cite it [from here](https://hal.science/hal-04150950). 
 
 ## Introduction
