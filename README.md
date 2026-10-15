@@ -7,6 +7,40 @@ if you are using software for any publication or article, we would be delighted 
 
 **NOTE**: This is not maintained a lot. For ROS 2 version [visit here](https://github.com/L2S-lab/natnet_ros2). Which is continuation of this work.
 
+## About this fork
+
+This is the [IE Robotics & AI Lab](https://github.com/IERoboticsAILab) fork of [L2S-lab/natnet_ros_cpp](https://github.com/L2S-lab/natnet_ros_cpp), tested with Motive 3.5 on Ubuntu 20.04.
+
+| Branch | ROS | Based on |
+|---|---|---|
+| `ros1` (this one) | ROS 1 Noetic | [L2S-lab/natnet_ros_cpp](https://github.com/L2S-lab/natnet_ros_cpp) `main` |
+| `ros2` | ROS 2 (Galactic, Humble, Jazzy) | [L2S-lab/natnet_ros2](https://github.com/L2S-lab/natnet_ros2) `main` |
+| `main` | | unchanged copy of upstream `main` |
+
+Changes on this branch (one commit each):
+
+- **NatNet SDK 4.4 instead of 4.0.** SDK 4.0 segfaults inside `libNatNet.so` on frames from Motive 3.x, usually within seconds of connecting. ARM is supported too.
+- **No more busy loop.** The node re-registered the frame callback in a loop with no sleep and used a full CPU core. It now registers once and spins (about 8% of a core with 6 bodies at 120 Hz).
+- **Untracked rigid bodies are not published.** Motive keeps sending the last known pose of a lost body; the driver used to publish it as if it were live. Set `pub_untracked_rigid_body:=true` for the old behaviour.
+- **One timestamp per frame**, and a new `remove_latency:=true` option that stamps messages with the camera exposure time (as in the ROS 2 driver).
+- **Bodies added in Motive after start-up** no longer cause an invalid publisher; they are skipped with a warning until the node restarts.
+- **Marker topics fixed**: publisher keys no longer collide (body 1 marker 12 vs body 11 marker 2) and `frame_id` is the global frame.
+- **`pub_rigid_body_marker` now defaults to `false`** in `natnet_ros.launch`.
+- No `[ERROR]` about the analog frame rate at start-up when Motive has no analog devices.
+- `FrameCallback` no longer casts the `NatNetClient*` to `Internal*`.
+
+**Upgrading an existing workspace:** the SDK download is skipped when `deps/NatNetSDK/lib` exists, so delete the old SDK first:
+
+```
+cd <your_ws>/src/natnet_ros_cpp && rm -rf deps/NatNetSDK/lib deps/NatNetSDK/include && cd ../.. && catkin_make -DCMAKE_BUILD_TYPE=Release
+```
+
+**Typical launch** (unicast; `clientIP` must be the IP of the machine running the node):
+
+```
+roslaunch natnet_ros_cpp natnet_ros.launch serverIP:=<motive-ip> clientIP:=<this-machine-ip> serverType:=unicast
+```
+
 ## Introduction
 This package contains a ROS driver for the NatNet protocol used by the OptiTrack motion capture system. It supports NatNet versions 4.0 (Motive 2.2 and higher). The NatNet SDK provided by the optitrack can be found [here](https://optitrack.com/support/downloads/developer-tools.html#natnet-sdk). It will be downloaded under `deps/NatnetSDK` while building it for the first time. NatNet protocol is used for streaming live motion capture data (rigid bodies, skeletons etc) across the shared network. 
 
