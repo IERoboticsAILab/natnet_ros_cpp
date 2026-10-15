@@ -12,6 +12,8 @@ It is a continuation of the ROS 1 driver. Which can be found [here](https://gith
 
 ## About this fork
 
+See [FORK_CHANGELOG.md](FORK_CHANGELOG.md) for every change with the issue it fixes, and [BEHAVIOUR_CHANGES.md](BEHAVIOUR_CHANGES.md) for what works differently from upstream.
+
 This is the [IE Robotics & AI Lab](https://github.com/IERoboticsAILab) fork, kept as the `ros2` branch of [IERoboticsAILab/natnet_ros_cpp](https://github.com/IERoboticsAILab/natnet_ros_cpp) and tested with Motive 3.5.
 
 | Branch | ROS | Based on |
