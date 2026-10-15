@@ -52,7 +52,8 @@ int Internal::ConnectClient(NatNetClient* g_pClient, sNatNetClientConnectParams 
             ROS_INFO("Analog Samples Per Mocap Frame : %d", *((int*)pResult));
         }
         else
-            ROS_ERROR("Error getting Analog frame rate.");
+            // Motive answers this only when analog devices are set up; it is not needed for mocap data.
+            ROS_DEBUG("Analog samples per mocap frame not available.");
     }
 
     return ErrorCode_OK;
