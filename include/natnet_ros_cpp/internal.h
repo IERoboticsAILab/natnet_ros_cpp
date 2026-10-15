@@ -37,6 +37,7 @@ public:
     ros::Publisher PointcloudPub;
     sensor_msgs::PointCloud msgPointcloud; // point cloud msg
 
+    ros::Time frameStamp; // stamp shared by every message published for the current frame
     int markerCount = 0; // number of individual markers (unlabled + labled)
     int UnlabeledCount = 0;
     sServerDescription g_serverDescription;

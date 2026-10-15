@@ -5,6 +5,8 @@
   <arg name="log_internals" default="false"/>
   <arg name="log_frames" default="false"/>
   <arg name="log_latencies" default="false"/>
+  <!-- Stamp messages with the camera mid-exposure time (receive time minus Motive's latency) -->
+  <arg name="remove_latency" default="false"/>
 
   <!-- CONNECTION -->
   <arg name="serverIP" default="192.168.0.100"/>
@@ -50,6 +52,7 @@
     <param name="log_internals" value="$(arg log_internals)" type="bool"/>
     <param name="log_frames" value="$(arg log_frames)" type="bool"/>
     <param name="log_latencies" value="$(arg log_latencies)" type="bool"/>
+    <param name="remove_latency" value="$(arg remove_latency)" type="bool"/>
 
     <!-- PUBLISHING -->
     <param name="pub_rigid_body" value="$(arg pub_rigid_body)" type="bool"/>

@@ -24,6 +24,7 @@ public:
     bool log_internals=false; // To log internal parameters and mesurements from the motion capture system
     bool log_frames=false; // To log frames 
     bool log_latencies=false; // To log the latencies of the system
+    bool remove_latency=false; // To stamp messages with the camera exposure time instead of the time the frame was received
     bool pub_rigid_body = false; // To enable publishing the rigidbody as ros msg
     bool pub_untracked_rigid_body = false; // To keep publishing a rigidbody (last known pose) while Motive is not tracking it
     bool pub_rigid_body_marker = false; // To enable publishing individual markers of rigidbodies
@@ -54,6 +55,7 @@ public:
         n.getParam("log_internals", log_internals);
         n.getParam("log_frames", log_frames);
         n.getParam("log_latencies", log_latencies);
+        n.getParam("remove_latency", remove_latency);
         n.getParam("pub_rigid_body", pub_rigid_body);
         n.getParam("pub_untracked_rigid_body", pub_untracked_rigid_body);
         n.getParam("pub_rigid_body_marker", pub_rigid_body_marker);

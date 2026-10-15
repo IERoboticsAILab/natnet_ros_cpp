@@ -199,6 +199,16 @@ void Internal::LatenciInfo(sFrameOfMocapData* data, void* pUserData, Internal &i
 void Internal::DataHandler(sFrameOfMocapData* data, void* pUserData, Internal &internal)
 {   
     int i=0;
+    // One stamp for the whole frame so poses, markers and TF of the same frame match.
+    internal.frameStamp = ros::Time::now();
+    if (internal.rosparam.remove_latency && data->CameraMidExposureTimestamp != 0)
+    {
+        // pUserData is the NatNetClient*; it keeps its clock synchronised with Motive's.
+        NatNetClient* pClient = (NatNetClient*) pUserData;
+        const double latencySec = pClient->SecondsSinceHostTimestamp( data->CameraMidExposureTimestamp );
+        if (latencySec > 0.0 && latencySec < 1.0)
+            internal.frameStamp -= ros::Duration(latencySec);
+    }
     ROS_INFO_COND(internal.rosparam.log_frames, "FrameID : %d", data->iFrame);
 
     // Rigid Bodies
@@ -250,7 +260,7 @@ void Internal::DataHandler(sFrameOfMocapData* data, void* pUserData, Internal &i
     if(internal.rosparam.pub_pointcloud)
     {
         internal.msgPointcloud.header.frame_id= internal.rosparam.globalFrame;
-        internal.msgPointcloud.header.stamp=ros::Time::now();
+        internal.msgPointcloud.header.stamp=internal.frameStamp;
         internal.PointcloudPub.publish(internal.msgPointcloud);
     }
     internal.msgPointcloud.points.clear() ;
@@ -277,7 +287,7 @@ void Internal::PubRigidbodyPose(sRigidBodyData &data, Internal &internal)
     // Creating a msg to put data related to the rigid body and 
     geometry_msgs::PoseStamped msgRigidBodyPose;
     msgRigidBodyPose.header.frame_id = internal.rosparam.globalFrame;
-    msgRigidBodyPose.header.stamp = ros::Time::now();
+    msgRigidBodyPose.header.stamp = internal.frameStamp;
     msgRigidBodyPose.pose.position.x = data.x;
     msgRigidBodyPose.pose.position.y = data.y;
     msgRigidBodyPose.pose.position.z = data.z;
@@ -290,7 +300,7 @@ void Internal::PubRigidbodyPose(sRigidBodyData &data, Internal &internal)
     // creating tf frame to visualize in the rviz
     static tf2_ros::TransformBroadcaster tfRigidBodies;
     geometry_msgs::TransformStamped msgTFRigidBodies;
-    msgTFRigidBodies.header.stamp = ros::Time::now();
+    msgTFRigidBodies.header.stamp = internal.frameStamp;
     msgTFRigidBodies.header.frame_id = internal.rosparam.globalFrame;
     msgTFRigidBodies.child_frame_id = body_name_it->second;
     msgTFRigidBodies.transform.translation.x = data.x;
@@ -317,7 +327,7 @@ void Internal::PubMarkerPose(sMarker &data, Internal &internal)
         geometry_msgs::PoseStamped msgMarkerPose;
         msgMarkerPose.header.frame_id = internal.rosparam.globalFrame;
 
-        msgMarkerPose.header.stamp = ros::Time::now();
+        msgMarkerPose.header.stamp = internal.frameStamp;
         msgMarkerPose.pose.position.x = data.x;
         msgMarkerPose.pose.position.y = data.y;
         msgMarkerPose.pose.position.z = data.z;
@@ -330,7 +340,7 @@ void Internal::PubMarkerPose(sMarker &data, Internal &internal)
         // creating tf frame to visualize in the rviz
         static tf2_ros::TransformBroadcaster tfMarker;
         geometry_msgs::TransformStamped msgTFMarker;
-        msgTFMarker.header.stamp = ros::Time::now();
+        msgTFMarker.header.stamp = internal.frameStamp;
         msgTFMarker.header.frame_id = internal.rosparam.globalFrame;
         msgTFMarker.child_frame_id = internal.rosparam.object_list[update].name;
         msgTFMarker.transform.translation.x = data.x;
@@ -362,7 +372,7 @@ void Internal::PubRigidbodyMarker(sMarker &data, Internal &internal)
     geometry_msgs::PointStamped msgMarkerPose;
     // marker positions are in the global frame, like the rigid body poses
     msgMarkerPose.header.frame_id = internal.rosparam.globalFrame;
-    msgMarkerPose.header.stamp = ros::Time::now();
+    msgMarkerPose.header.stamp = internal.frameStamp;
 
     msgMarkerPose.point.x = data.x;
     msgMarkerPose.point.y = data.y;
