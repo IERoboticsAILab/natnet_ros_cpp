@@ -24,7 +24,7 @@
   <arg name="pub_untracked_rigid_body" default="false"/>
   <!-- To publish the individual (unlabeled) markers along with the (labeled) markers of the rigid bodies -->
   <!-- keep pub_rigid_body to true to publish the markers of the rigidbody -->
-  <arg name="pub_rigid_body_marker" default="true"/>  
+  <arg name="pub_rigid_body_marker" default="false"/>  
   <!-- To publish markers as rigidbodies and track them, make the required changes in the config/initiate.yaml -->
   <arg name="pub_individual_marker" default="false"/>
   <!-- To publish all the unlabeled markers as point cloud -->
