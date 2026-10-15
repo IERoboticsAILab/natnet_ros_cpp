@@ -5,12 +5,12 @@
 Internal internal;
 
 //Function to make callback to the datahandler when recieve the new frame.
+// pUserData is the NatNetClient* passed to SetFrameReceivedCallback.
 void FrameCallback(sFrameOfMocapData *data, void* pUserData)
 {
-    auto pClient = reinterpret_cast<Internal *>(pUserData);
     if (internal.rosparam.log_latencies)
-        pClient->LatenciInfo(data, pUserData, internal);
-    pClient->DataHandler(data, pUserData, internal);
+        internal.LatenciInfo(data, pUserData, internal);
+    internal.DataHandler(data, pUserData, internal);
 }
 
 int main( int argc, char **argv)
