@@ -256,6 +256,21 @@ void Internal::DataHandler(sFrameOfMocapData* data, void* pUserData, Internal &i
 
 void Internal::PubRigidbodyPose(sRigidBodyData &data, Internal &internal)
 {
+    // Rigid bodies are only listed at start-up. A body created in Motive afterwards has no
+    // publisher, and looking it up with operator[] would publish on an invalid one every frame.
+    const auto body_name_it = internal.ListRigidBodies.find(data.ID);
+    if (body_name_it == internal.ListRigidBodies.end())
+    {
+        ROS_WARN_THROTTLE(5, "No publisher for rigid body ID %d (added after start-up?). Restart the node to publish it.", data.ID);
+        return;
+    }
+    const auto publisher_it = internal.RigidbodyPub.find(body_name_it->second);
+    if (publisher_it == internal.RigidbodyPub.end())
+    {
+        ROS_WARN_THROTTLE(5, "No publisher for rigid body %s", body_name_it->second.c_str());
+        return;
+    }
+
     // Creating a msg to put data related to the rigid body and 
     geometry_msgs::PoseStamped msgRigidBodyPose;
     msgRigidBodyPose.header.frame_id = internal.rosparam.globalFrame;
@@ -267,14 +282,14 @@ void Internal::PubRigidbodyPose(sRigidBodyData &data, Internal &internal)
     msgRigidBodyPose.pose.orientation.y = data.qy;
     msgRigidBodyPose.pose.orientation.z = data.qz;
     msgRigidBodyPose.pose.orientation.w = data.qw;
-    internal.RigidbodyPub[internal.ListRigidBodies[data.ID]].publish(msgRigidBodyPose);
+    publisher_it->second.publish(msgRigidBodyPose);
     
     // creating tf frame to visualize in the rviz
     static tf2_ros::TransformBroadcaster tfRigidBodies;
     geometry_msgs::TransformStamped msgTFRigidBodies;
     msgTFRigidBodies.header.stamp = ros::Time::now();
     msgTFRigidBodies.header.frame_id = internal.rosparam.globalFrame;
-    msgTFRigidBodies.child_frame_id = internal.ListRigidBodies[data.ID];
+    msgTFRigidBodies.child_frame_id = body_name_it->second;
     msgTFRigidBodies.transform.translation.x = data.x;
     msgTFRigidBodies.transform.translation.y = data.y;
     msgTFRigidBodies.transform.translation.z = data.z;
@@ -349,6 +364,12 @@ void Internal::PubRigidbodyMarker(sMarker &data, Internal &internal)
     msgMarkerPose.point.y = data.y;
     msgMarkerPose.point.z = data.z;
 
-    internal.RigidbodyMarkerPub[std::to_string(modelID)+std::to_string(markerID)].publish(msgMarkerPose);
+    const auto publisher_it = internal.RigidbodyMarkerPub.find(std::to_string(modelID)+std::to_string(markerID));
+    if (publisher_it == internal.RigidbodyMarkerPub.end())
+    {
+        ROS_WARN_THROTTLE(5, "No publisher for marker %d of rigid body ID %d", markerID, modelID);
+        return;
+    }
+    publisher_it->second.publish(msgMarkerPose);
 
 }
