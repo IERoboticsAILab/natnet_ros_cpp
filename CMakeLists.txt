@@ -86,6 +86,13 @@ install(DIRECTORY include/${PROJECT_NAME}
   DESTINATION include
 )
 
+# The nodes link to deps/NatNetSDK/lib/libNatNet.so, but the install step drops the build-tree
+# rpath, so install the library next to the package's other libraries (lib/ is on
+# LD_LIBRARY_PATH once install/setup.bash is sourced).
+install(FILES ${NATNET_LIBRARY_DIR}
+  DESTINATION lib
+)
+
 install(DIRECTORY
   launch
   config 
