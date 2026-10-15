@@ -72,6 +72,7 @@ Pass these as `name:=value` to `roslaunch`.
 | `pub_individual_marker` | `false` | Track single markers (see below) |
 | `pub_pointcloud` | `false` | Publish all markers as one `sensor_msgs/PointCloud` |
 | `remove_latency` | `false` | Stamp messages with the camera exposure time instead of the arrival time |
+| `respawn` | `false` | Restart the driver 5 s after it exits (useful when it runs as a service) |
 | `log_frames`, `log_latencies`, `log_internals` | `false` | Print debug information |
 
 ## Tracking a single marker

@@ -26,6 +26,7 @@ Each change is a separate commit. ✓ = changed on that branch.
 | 11 | A plain launch connected but published nothing | Publishing and activation are on by default | | ✓ |
 | 12 | The launch file wouldn't start on ROS 2 Galactic (it imported a feature only newer versions have) | Removed that unused import | | ✓ |
 | 13 | The driver couldn't find the OptiTrack library at startup unless a path was set by hand | The library is installed with the driver | | ✓ |
+| 15 | If the driver died, roslaunch kept running, so a service looked healthy while no data came out | New launch option `respawn:=true` restarts the driver after 5 s | ✓ | |
 | 14 | The instructions didn't match the fork | README updated: fork info, SDK choice, new options, test results | ✓ | ✓ |
 
 The two strictly necessary changes are #1 (crash) and #2 (CPU). #6 is strongly recommended for robot safety. The others are smaller fixes and cleanup.

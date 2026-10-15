@@ -30,6 +30,9 @@
   <!-- To publish all the unlabeled markers as point cloud -->
   <arg name="pub_pointcloud" default="false"/>
 
+  <!-- Restart the driver 5 s after it exits (e.g. when run as a service) -->
+  <arg name="respawn" default="false"/>
+
   <!-- CONFIG FILE -->
   <arg name="conf_file" default="initiate.yaml"/>
 
@@ -44,7 +47,7 @@
     <param name="globalFrame" value="$(arg globalFrame)" type="str"/>
   </group>
   
-  <node pkg="natnet_ros_cpp" type="natnet_ros_cpp" name="natnet_ros" output="screen" >    
+  <node pkg="natnet_ros_cpp" type="natnet_ros_cpp" name="natnet_ros" output="screen" respawn="$(arg respawn)" respawn_delay="5" >    
     <!-- CONFIG-FILE -->
     <rosparam file="$(find natnet_ros_cpp)/config/$(arg conf_file)"/>   
   
