@@ -311,7 +311,7 @@ void NatNetNode::get_info()
                         const int markerRequiredLabel = pRB->MarkerRequiredLabels[markerIdx];
                         // Creating publisher for the markers of the rigid bodies
                         if(pub_rigid_body_marker)
-                            RigidbodyMarkerPub[std::to_string(pRB->ID)+std::to_string(markerIdx+1)] = create_publisher<geometry_msgs::msg::PointStamped>(body_name+"/marker"+std::to_string(markerIdx)+"/pose", rclcpp::QoS(1000));
+                            RigidbodyMarkerPub[std::to_string(pRB->ID)+"_"+std::to_string(markerIdx+1)] = create_publisher<geometry_msgs::msg::PointStamped>(body_name+"/marker"+std::to_string(markerIdx)+"/pose", rclcpp::QoS(1000));
                         RCLCPP_INFO_EXPRESSION(get_logger(),log_internals,  "\tMarker #%d:", markerIdx );
                         RCLCPP_INFO_EXPRESSION(get_logger(),log_internals,  "\t\tPosition: %.2f, %.2f, %.2f", markerPosition[0], markerPosition[1], markerPosition[2] );
 
@@ -542,13 +542,14 @@ void NatNetNode::process_rigid_body_marker(sMarker &data)
     NatNet_DecodeID( data.ID, &modelID, &markerID );
 
     geometry_msgs::msg::PointStamped msgMarkerPose;
-    msgMarkerPose.header.frame_id = std::to_string(modelID)+std::to_string(markerID);
+    // marker positions are in the global frame, like the rigid body poses
+    msgMarkerPose.header.frame_id = global_frame;
     msgMarkerPose.header.stamp = remove_latency ? this->get_clock()->now()-frame_delay : this->get_clock()->now();
     msgMarkerPose.point.x = data.x;
     msgMarkerPose.point.y = data.y;
     msgMarkerPose.point.z = data.z;
 
-    const std::string marker_key = std::to_string(modelID)+std::to_string(markerID);
+    const std::string marker_key = std::to_string(modelID)+"_"+std::to_string(markerID);
     const auto publisher_it = RigidbodyMarkerPub.find(marker_key);
     if (publisher_it == RigidbodyMarkerPub.end() || !publisher_it->second)
     {
